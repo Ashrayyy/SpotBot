@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Spot Bot</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="please_login">Please Login</string>
+    <string name="log_in">Log in</string>
+    <string name="sign_up_here">Sign Up Here</string>
+    <string name="enter_your_name">Enter your Name</string>
+    <string name="enter_your_email">Enter your Email</string>
+    <string name="confrim_password">Confrim Password</string>
+    <string name="sign_up">Sign Up</string>
+</resources>
