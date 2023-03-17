@@ -12,8 +12,10 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import com.ashray.spotbot.databinding.ActivityDashboardAdminBinding
 import com.ashray.spotbot.databinding.ActivityFaceDetectBinding
+import com.bumptech.glide.Glide
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -37,8 +39,9 @@ class FaceDetectActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val options=FaceDetectorOptions.Builder()
-            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
-            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
+            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
             .build()
 
         detector=FaceDetection.getClient(options)
@@ -54,13 +57,38 @@ class FaceDetectActivity : AppCompatActivity() {
 //// Important      from drawables
         val resourceimg=R.drawable.messi
         val bitmap1=BitmapFactory.decodeResource(resources,resourceimg)
-        originalIv.setImageResource(resourceimg)
+//        originalIv.setImageResource(resourceimg)
 
 //// Important       from image view
 //        val bitmapDrawable=originalIv.drawable as   BitmapDrawable
 //        val bitmap2=bitmapDrawable.bitmap
 //
-////// Important       from uri
+//// Important       from uri
+
+        var bitmap3=BitmapFactory.decodeResource(resources,resourceimg)
+        val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+
+            val imageUri: Uri?=null
+            try {
+                bitmap3=MediaStore.Images.Media.getBitmap(contentResolver,uri)
+//                originalIv.setImageResource(bitmap3)
+                Glide.with(this).load(uri).into(originalIv)
+//                Toast.makeText(this,"this works",Toast.LENGTH_SHORT).show()
+            }catch (e:Exception) {
+                Log.e(TAG, "OnCreate: ", e)
+                Toast.makeText(this,"this DOESN'T work",Toast.LENGTH_SHORT).show()
+            }
+
+//            image = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+//            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.ab)
+//            imagebit = InputImage.fromBitmap(bitmap , 0)
+            // Handle the returned Uri
+        }
+
+        originalIv.setOnClickListener {
+            getContent.launch("image/*")
+        }
+
 //        val imageUri: Uri?=null
 //        try {
 //            val bitmap3=MediaStore.Images.Media.getBitmap(contentResolver,imageUri)
@@ -70,7 +98,7 @@ class FaceDetectActivity : AppCompatActivity() {
 
 
         detectFaceBtn.setOnClickListener {
-            analyzePhoto(bitmap1)
+            analyzePhoto(bitmap3)
         }
     }
     private fun analyzePhoto(bitmap:Bitmap){
@@ -85,18 +113,27 @@ class FaceDetectActivity : AppCompatActivity() {
         val inputImage=InputImage.fromBitmap(smallerBitmap,0)
         detector.process(inputImage)
             .addOnSuccessListener {faces->
-                Log.d(TAG,"analyzePhoto: Successfully detected face ")
-                Toast.makeText(this,"Face Detected",Toast.LENGTH_SHORT).show()
+                if(faces.size>0){
 
-                for(face in faces){
-                    val rect=face.boundingBox
-                    rect.set(rect.left* SCALING_FACTOR,
-                    rect.top*(SCALING_FACTOR-1),
-                    rect.right*(SCALING_FACTOR),
-                        rect.bottom* SCALING_FACTOR +90)
+
+                    Log.d(TAG, "analyzePhoto: Successfully detected face ")
+                    Toast.makeText(this, "Face Detected, No. of faces : ${faces.size}", Toast.LENGTH_SHORT).show()
+
+                    for (face in faces) {
+                        val rect = face.boundingBox
+                        rect.set(
+                            rect.left * SCALING_FACTOR,
+                            rect.top * (SCALING_FACTOR - 1),
+                            rect.right * (SCALING_FACTOR),
+                            rect.bottom * SCALING_FACTOR + 90
+                        )
+                    }
+
+                    cropDetectedFace(bitmap, faces)
                 }
-
-                cropDetectedFace(bitmap,faces)
+                else{
+                    Toast.makeText(this,"No face Detected, Sorry",Toast.LENGTH_SHORT).show()
+                }
             }
             .addOnFailureListener{e->
                 Log.e(TAG,"analyzePhoto: ",e)
