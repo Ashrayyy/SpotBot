@@ -90,7 +90,8 @@ class MainActivity : AppCompatActivity() {
                         finish()
                     }
                     else if(userType =="admin"){
-                        startActivity(Intent(this@MainActivity,dashboardAdminActivity::class.java))
+//                        startActivity(Intent(this@MainActivity,dashboardAdminActivity::class.java))
+                        startActivity(Intent(this@MainActivity,FaceDetectActivity::class.java))
                         finish()
                     }
                 }
