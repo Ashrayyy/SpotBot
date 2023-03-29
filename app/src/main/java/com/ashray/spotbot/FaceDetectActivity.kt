@@ -33,13 +33,14 @@ class FaceDetectActivity : AppCompatActivity() {
         private const val SCALING_FACTOR=10
         private const val TAG="FACE_DETECT_TAG"
     }
+    var mynum=0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityFaceDetectBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val options=FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
             .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
             .build()
@@ -144,7 +145,8 @@ class FaceDetectActivity : AppCompatActivity() {
     private fun cropDetectedFace(bitmap: Bitmap,faces:List<Face>){
         Log.d(TAG,"cropDetectedFaces")
 
-        val rect=faces[0].boundingBox
+        mynum=mynum+1
+        val rect=faces[mynum%faces.size].boundingBox
         val x=Math.max(rect.left,0)
         val y=Math.max(rect.top,0)
         val width=rect.width()
