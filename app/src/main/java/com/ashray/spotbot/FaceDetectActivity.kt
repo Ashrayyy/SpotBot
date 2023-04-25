@@ -78,20 +78,6 @@ class FaceDetectActivity : AppCompatActivity() {
         private const val SCALING_FACTOR=10
         private const val TAG="FACE_DETECT_TAG"
     }
-    var mynum=0
-    private lateinit var faceNetModel : FaceNetModel
-    private lateinit var frameAnalyser  : FrameAnalyser
-
-    private lateinit var fileReader : com.ashray.spotbot.FileReader
-    // Use the device's GPU to perform faster computations.
-    private val useGpu = true
-
-    // Use XNNPack to accelerate inference.
-    private val useXNNPack = true
-
-    // Use the model configs in Models.kt
-    // Default is Models.FACENET ; Quantized models are faster
-    private val modelInfo = Models.FACENET
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityFaceDetectBinding.inflate(layoutInflater)
@@ -325,9 +311,7 @@ class FaceDetectActivity : AppCompatActivity() {
     private fun cropDetectedFace(bitmap: Bitmap,faces:List<Face>){
         Log.d(TAG,"cropDetectedFaces")
 
-        mynum=mynum+1
-        mynum=mynum%faces.size
-        val rect=faces[mynum].boundingBox
+        val rect=faces[0].boundingBox
         val x=Math.max(rect.left,0)
         val y=Math.max(rect.top,0)
         val width=rect.width()
