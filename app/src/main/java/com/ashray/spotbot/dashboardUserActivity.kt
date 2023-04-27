@@ -62,7 +62,7 @@ class dashboardUserActivity : AppCompatActivity() {
 
         if (requestCode == 100 && resultCode == RESULT_OK) {
             ImageUri = data?.data!!
-            binding.img.setImageURI(ImageUri)
+//            binding.img.setImageURI(ImageUri)
         }
     }
 

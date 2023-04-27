@@ -5,15 +5,17 @@
     android:layout_gravity="center_horizontal"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:cardBackgroundColor="#A7E361"
+    app:cardBackgroundColor="#158A24"
     app:cardCornerRadius="8dp"
     app:cardElevation="8dp"
-    android:layout_margin="13dp">
+
+    android:layout_margin="8dp">
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:padding="16dp"
+        android:padding="10dp"
         android:gravity="center"
         android:orientation="vertical">
         <LinearLayout
