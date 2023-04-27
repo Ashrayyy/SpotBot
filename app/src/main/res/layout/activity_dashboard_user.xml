@@ -35,6 +35,15 @@
             android:inputType="text"/>
 
         <EditText
+            android:id="@+id/telephoneEt"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="number"
+            android:hint="Telephone" />
+
+        <EditText
             android:id="@+id/desc"
             android:layout_width="match_parent"
             android:layout_height="250dp"
