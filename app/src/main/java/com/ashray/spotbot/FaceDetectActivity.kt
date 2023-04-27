@@ -1,64 +1,43 @@
 package com.ashray.spotbot
 
-import android.annotation.SuppressLint
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.math.pow
-import kotlin.math.sqrt
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.os.Bundle
-import android.provider.MediaStore
-import android.util.Log
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
-import com.ashray.spotbot.databinding.ActivityFaceDetectBinding
-import com.bumptech.glide.Glide
-
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.face.Face
-import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetector
-import com.google.mlkit.vision.face.FaceDetectorOptions
 //import org.opencv.android.Utils
 //import org.opencv.core.Core
 //import org.opencv.core.CvType
 //import org.opencv.core.Mat
 //import org.opencv.core.Scalar
 //import org.opencv.imgproc.Imgproc
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.ResizeOp
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.nio.ByteBuffer
 
 //from here
 
-import android.content.DialogInterface
-import android.text.Editable
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.EditText
+import android.app.ProgressDialog
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import com.ashray.spotbot.databinding.ActivityFaceDetectBinding
 import com.ashray.spotbot.model.FaceNetModel
 import com.ashray.spotbot.model.Models
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.tensorflow.lite.support.common.FileUtil
-import java.io.FileReader
-import java.io.IOException
-import kotlin.math.pow
-import kotlin.math.sqrt
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.google.firebase.storage.FirebaseStorage
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.Face
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetector
+import com.google.mlkit.vision.face.FaceDetectorOptions
+import java.io.FileNotFoundException
+import kotlin.math.abs
 
 
 class FaceDetectActivity : AppCompatActivity() {
@@ -70,10 +49,21 @@ class FaceDetectActivity : AppCompatActivity() {
     private lateinit var detector:FaceDetector
     private lateinit var recogniseBtn: Button
     private lateinit var croppedBitmap:Bitmap
+    private lateinit var faceNetModel:FaceNetModel
+    private lateinit var bitmap3: Bitmap
+    private lateinit var grpImage:Bitmap
+    private lateinit var fileReader : com.ashray.spotbot.FileReader
 
-//    private lateinit var faceNet: FaceNet
+    //    private lateinit var faceNet: FaceNet
 //    private lateinit var faceMat: Mat
+    private val useGpu = true
 
+    // Use XNNPack to accelerate inference.
+    private val useXNNPack = true
+
+    // Use the model configs in Models.kt
+    // Default is Models.FACENET ; Quantized models are faster
+    private val modelInfo = Models.FACENET
     private companion object{
         private const val SCALING_FACTOR=10
         private const val TAG="FACE_DETECT_TAG"
@@ -83,6 +73,7 @@ class FaceDetectActivity : AppCompatActivity() {
         binding=ActivityFaceDetectBinding.inflate(layoutInflater)
         setContentView(binding.root)
 //        System.loadLibrary("opencv_java4")
+
 
         faceNetModel = FaceNetModel( this , modelInfo , useGpu , useXNNPack )
         val options=FaceDetectorOptions.Builder()
@@ -117,26 +108,59 @@ class FaceDetectActivity : AppCompatActivity() {
 //
 //// Important       from uri
 
-        var bitmap3=BitmapFactory.decodeResource(resources,resourceimg)
-        var grpImage=bitmap3
-        val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        var name=intent.getStringExtra("name")
+        var phoneNum=intent.getStringExtra("phone_number")
+        var desc=intent.getStringExtra("description")
 
-            val imageUri: Uri?=null
-            try {
-                bitmap3=MediaStore.Images.Media.getBitmap(contentResolver,uri)
-//                originalIv.setImageResource(bitmap3)
-                Glide.with(this).load(uri).into(originalIv)
-//                Toast.makeText(this,"this works",Toast.LENGTH_SHORT).show()
-            }catch (e:Exception) {
-                Log.e(TAG, "OnCreate: ", e)
-                Toast.makeText(this,"this DOESN'T work",Toast.LENGTH_SHORT).show()
+//        var bitmap3:Bitmap
+//        var grpImage:Bitmap
+//
+
+        val storagename = FirebaseStorage.getInstance().reference.child("$name.jpg")
+        var progressDialog = ProgressDialog(this)
+        progressDialog.setMessage("Loading Image....")
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+
+        storagename.downloadUrl.addOnSuccessListener {uri->
+            Glide.with(this).load(uri).into(originalIv)
+            val imageUri = Uri.parse(uri.toString())
+            loadUriToBitmap(this, imageUri) { bitmap ->
+                // Use the bitmap here
+                bitmap3 = bitmap
+                grpImage=bitmap3
             }
-
-//            image = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-//            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.ab)
-//            imagebit = InputImage.fromBitmap(bitmap , 0)
-            // Handle the returned Uri
+        //    Toast.makeText(this,"${uri.toString()}")
+            try {
+              //  bitmap3 = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+//                grpImage=bitmap3
+            } catch (e: FileNotFoundException) {
+                e.printStackTrace()
+            }
+            progressDialog.dismiss()
         }
+
+
+
+
+//        val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+//
+//            val imageUri: Uri?=null
+//            try {
+//                bitmap3=MediaStore.Images.Media.getBitmap(contentResolver,uri)
+////                originalIv.setImageResource(bitmap3)
+//                Glide.with(this).load(uri).into(originalIv)
+////                Toast.makeText(this,"this works",Toast.LENGTH_SHORT).show()
+//            }catch (e:Exception) {
+//                Log.e(TAG, "OnCreate: ", e)
+//                Toast.makeText(this,"this DOESN'T work",Toast.LENGTH_SHORT).show()
+//            }
+//
+////            image = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+////            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.ab)
+////            imagebit = InputImage.fromBitmap(bitmap , 0)
+//            // Handle the returned Uri
+//        }
 
         val getCon = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             val imageUri: Uri?=null
@@ -156,9 +180,9 @@ class FaceDetectActivity : AppCompatActivity() {
             // Handle the returned Uri
         }
 
-        originalIv.setOnClickListener {
-            getContent.launch("image/*")
-        }
+//        originalIv.setOnClickListener {
+//            getContent.launch("image/*")
+//        }
 
 //        val imageUri: Uri?=null
 //        try {
@@ -171,92 +195,79 @@ class FaceDetectActivity : AppCompatActivity() {
         detectFaceBtn.setOnClickListener {
             analyzePhoto(bitmap3)
         }
-        recogniseBtn.setOnClickListener {
+        binding.selectBtn.setOnClickListener {
             getCon.launch("image/*")
+        }
+        recogniseBtn.setOnClickListener {
             isPersonPresent(croppedBitmap,grpImage)
         }
     }
 
 
-    private fun isPersonPresent(personBitmap: Bitmap,grpBitmap: Bitmap) {
-//        try {
-//            // Load the FaceNet model
-//            val options = Interpreter.Options()
-//            var modelFile="mask_detector.tflite"
-//            val assetManager=this@FaceDetectActivity.assets
-//            val modelInputStream = assetManager.open(modelFile)
-//
-//
-//            val modelBytes = modelInputStream.readBytes()
-//            val interpreter = Interpreter(ByteBuffer.wrap(modelBytes), Interpreter.Options())
-//
-//
-//            // Preprocess the input bitmap
-//            val inputImage = TensorImage(DataType.FLOAT32)
-//            inputImage.load(personBitmap)
-//            val resizeOp = ResizeOp(inputSize, inputSize, ResizeOp.ResizeMethod.BILINEAR)
-//            val resizedBuffer = TensorBuffer.createFixedSize(
-//                intArrayOf(1, inputSize, inputSize, 3),
-//                DataType.FLOAT32
-//            )
-//            resizeOp.apply(inputImage.ten, resizedBuffer)
-//
-//            // Run the FaceNet model on the input image
-//            val embeddingsBuffer = TensorBuffer.createFixedSize(
-//                intArrayOf(1, embeddingsSize),
-//                DataType.FLOAT32
-//            )
-//            interpreter.run(resizedBuffer.buffer, embeddingsBuffer.buffer)
-//
-//            // Get the embeddings as a FloatArray
-////            return embeddingsBuffer.floatArray
-//            Toast.makeText(this,"array: ${embeddingsBuffer.floatArray}",Toast.LENGTH_SHORT).show()
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
-//
-//
-//// Extract the features of the face using FaceNet
-//
-//// Extract the features of the face using FaceNet
-//        faceNet = FaceNet(this);
-//        faceMat = Mat()
-//
-//        Utils.bitmapToMat(personBitmap, faceMat)
-//        Imgproc.cvtColor(faceMat, faceMat, Imgproc.COLOR_BGR2RGB)
-//        faceMat.convertTo(faceMat, CvType.CV_32F)
-//        Core.divide(faceMat, Scalar(255.0), faceMat)
-//
-//        //Extract the features of the face using FaceNet
-//        val faceFeatures = faceNet.getEmbedding(personBitmap)
-//        Toast.makeText(this,"${faceFeatures}",Toast.LENGTH_SHORT).show()
+    fun loadUriToBitmap(context: Context, uri: Uri, onBitmapLoaded: (Bitmap) -> Unit) {
+        Glide.with(context)
+            .asBitmap()
+            .load(uri)
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    onBitmapLoaded(resource)
+                }
 
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    // Handle the case when the load is cancelled or fails
+                }
+            })
+    }
+
+    private fun isPersonPresent(personBitmap: Bitmap,grpBitmap: Bitmap) {
 
         Toast.makeText(this,"Working",Toast.LENGTH_SHORT).show()
-        val inputImage=InputImage.fromBitmap(grpBitmap,0)
+//        val inputImage=InputImage.fromBitmap(grpBitmap,0)
+
+        val smallerBitmap=Bitmap.createScaledBitmap(
+            grpBitmap,grpBitmap.width/ SCALING_FACTOR,
+            grpBitmap.height/ SCALING_FACTOR,
+            false
+        )
+
+        val inputImage=InputImage.fromBitmap(smallerBitmap,0)
+
+
         var g=faceNetModel.getFaceEmbedding(personBitmap)
-        rslt.text=g.toString().trim()
-        Toast.makeText(this,"${g}",Toast.LENGTH_SHORT).show()
+        val arrayString = g.joinToString(", ")
+//        rslt.text=g.toString().trim()
+        rslt.text=arrayString
+
+        Toast.makeText(this,"${g} + size: ${g.size}",Toast.LENGTH_SHORT).show()
+        var closestMatch=0
+        var distance=128.0
         detector.process(inputImage)
             .addOnSuccessListener {faces->
                 if(faces.size>0){
                     Log.d(TAG, "grpPhoto: Successfully detected faces ")
                     Toast.makeText(this, "Group Faces Detected, No. of faces : ${faces.size}", Toast.LENGTH_SHORT).show()
 
-                    for (face in faces) {
-
-//                        TODO("Generate face embeddings for every face in grp Photo and Compare their distance with personPhoto")
-
-                        val rect = face.boundingBox
-                        rect.set(
-                            rect.left * SCALING_FACTOR,
-                            rect.top * (SCALING_FACTOR - 1),
-                            rect.right * (SCALING_FACTOR),
-                            rect.bottom * SCALING_FACTOR + 1
-                        )
+                    for (num in 0..faces.size) {
+                        var testFace=faceNetModel.getFaceEmbedding(personBitmap)
+                        var sum=0.0
+                        for (i in 0..127){
+                            sum+= abs(testFace[i]-g[i])
+                        }
+                        if(sum<distance){
+                            closestMatch=num
+                            distance=sum
+                        }
                     }
-
-//                    cropDetectedFace(bitmap, faces)
+                    Log.i("distance","${distance}")
+                    var face=faces[closestMatch]
+                    val rect = face.boundingBox
+                    rect.set(
+                        rect.left * SCALING_FACTOR,
+                        rect.top * (SCALING_FACTOR - 1),
+                        rect.right * (SCALING_FACTOR),
+                        rect.bottom * SCALING_FACTOR + 1
+                    )
+                    cropDetectedFace(grpBitmap, faces, closestMatch)
                 }
                 else{
                     Toast.makeText(this,"No face Detected, Sorry",Toast.LENGTH_SHORT).show()
@@ -308,10 +319,10 @@ class FaceDetectActivity : AppCompatActivity() {
             }
     }
 
-    private fun cropDetectedFace(bitmap: Bitmap,faces:List<Face>){
+    private fun cropDetectedFace(bitmap: Bitmap,faces:List<Face>,closestMatch: Int=0){
         Log.d(TAG,"cropDetectedFaces")
 
-        val rect=faces[0].boundingBox
+        val rect=faces[closestMatch].boundingBox
         val x=Math.max(rect.left,0)
         val y=Math.max(rect.top,0)
         val width=rect.width()
@@ -327,6 +338,26 @@ class FaceDetectActivity : AppCompatActivity() {
 
         croppedIv.setImageBitmap(croppedBitmap)
     }
+
+//    private fun cropDetectedFace(bitmap: Bitmap,faces:List<Face>, closestMatch:Int){
+//        Log.d(TAG,"cropDetectedFaces")
+//
+//        val rect=faces[closestMatch].boundingBox
+//        val x=Math.max(rect.left,0)
+//        val y=Math.max(rect.top,0)
+//        val width=rect.width()
+//        val height=rect.height()
+//
+//        croppedBitmap=Bitmap.createBitmap(
+//            bitmap,
+//            x,
+//            y,
+//            if(x+width>bitmap.width) bitmap.width - x else width,
+//            if(y+height>bitmap.height)bitmap.height-y else height
+//        )
+//
+//        croppedIv.setImageBitmap(croppedBitmap)
+//    }
 
 //    fun recognizeImage(bitmap: Bitmap) {
 //
