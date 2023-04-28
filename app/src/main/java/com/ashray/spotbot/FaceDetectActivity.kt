@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -31,6 +32,8 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import java.io.File
 import java.io.FileNotFoundException
 import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 class FaceDetectActivity : AppCompatActivity() {
@@ -45,7 +48,7 @@ class FaceDetectActivity : AppCompatActivity() {
     private lateinit var faceNetModel:FaceNetModel
     private lateinit var bitmap3: Bitmap
     private lateinit var grpImage:Bitmap
-    private lateinit var fileReader : com.ashray.spotbot.FileReader
+    private lateinit var fileReader : FileReader
 
     //    private lateinit var faceNet: FaceNet
 //    private lateinit var faceMat: Mat
@@ -90,8 +93,7 @@ class FaceDetectActivity : AppCompatActivity() {
         croppedIv=binding.croppedIv
         recogniseBtn=binding.recogniseBtn
 
-        val resourceimg=R.drawable.messi
-        val bitmap1=BitmapFactory.decodeResource(resources,resourceimg)
+//        val resourceimg=R.drawable.messi
 
         var name=intent.getStringExtra("name")
         var phoneNum=intent.getStringExtra("phone_number")
@@ -115,7 +117,7 @@ class FaceDetectActivity : AppCompatActivity() {
             loadUriToBitmap(this, imageUri) { bitmap ->
                 // Use the bitmap here
                 bitmap3 = bitmap
-                grpImage=bitmap3
+                grpImage=BitmapFactory.decodeResource(resources,R.drawable.ic)
             }
         //    Toast.makeText(this,"${uri.toString()}")
             try {
@@ -172,6 +174,10 @@ class FaceDetectActivity : AppCompatActivity() {
 
 //        Toast.makeText(this,"Working",Toast.LENGTH_SHORT).show()
 
+        var b=getResizedBitmap(personBitmap)
+        var g=faceNetModel.getFaceEmbedding(b)
+
+
         val smallerBitmap=Bitmap.createScaledBitmap(
             grpBitmap,grpBitmap.width/ SCALING_FACTOR,
             grpBitmap.height/ SCALING_FACTOR,
@@ -180,12 +186,11 @@ class FaceDetectActivity : AppCompatActivity() {
 
         val inputImage=InputImage.fromBitmap(smallerBitmap,0)
 
-        var g=faceNetModel.getFaceEmbedding(getResizedBitmap(personBitmap))
         val arrayString = g.joinToString(", ")
 //        rslt.text=g.toString().trim()
         rslt.text=arrayString
         var closestMatch=0
-        var distance=1000.0
+        var distance= 100.0F
         detector.process(inputImage)
             .addOnSuccessListener {faces->
                 if(faces.size>0){
@@ -193,24 +198,28 @@ class FaceDetectActivity : AppCompatActivity() {
                     Toast.makeText(this, "Group Faces Detected, No. of faces : ${faces.size}", Toast.LENGTH_SHORT).show()
 
                     for (num in 0..faces.size-1) {
+
+
                         var bro=getResizedBitmap(returnBitmap(grpImage,faces[num]))
                         var testFace=faceNetModel.getFaceEmbedding(bro)
 //                        if(num==2){
 //                            originalIv.setImageBitmap(bro)
 //                        }
-                        var sum=0.0
+                        var sum:Float
+                        sum=l2NormDistance(g,testFace)
 
-                        for (i in 0..127){
-                            var k:Float=testFace[i]-g[i]
-                            sum+= k*k
-//                            Log.i("distance","${testFace[i]} ${g[i]}")
-                        }
-                        Log.i("distance","${sum}")
-                        sum=Math.sqrt(sum)
+//                        for (i in 0..127){
+//                            var k:Float=testFace[i]-g[i]
+//                            sum+= k*k
+////                            Log.i("distance","${testFace[i]} - ${g[i]} = ${k} , sum = ${sum}")
+//
+//                        }
+//                        sum= sqrt(sum)
                         if(sum<distance){
                             closestMatch=num
                             distance=sum
                         }
+                        Log.i("distance","${sum}, Closest Match : $closestMatch")
                     }
 //                    Log.i("distance","${distance}")
                     var face=faces[closestMatch]
@@ -262,6 +271,8 @@ class FaceDetectActivity : AppCompatActivity() {
                     }
 
                     cropDetectedFace(bitmap, faces)
+                    binding.selectBtn.visibility = View.VISIBLE
+                    binding.recogniseBtn.visibility=View.VISIBLE
                 }
                 else{
                     Toast.makeText(this,"No face Detected, Sorry",Toast.LENGTH_SHORT).show()
@@ -310,14 +321,22 @@ class FaceDetectActivity : AppCompatActivity() {
         return newBit
     }
 
-    fun getResizedBitmap(bitmap: Bitmap): Bitmap {
+    private fun getResizedBitmap(bitmap: Bitmap): Bitmap {
         val size = 160 // desired size in pixels
         return Bitmap.createScaledBitmap(bitmap, size, size, true)
     }
-    fun openDialer(phoneNumber: String) {
+    private fun openDialer(phoneNumber: String) {
         val intent = Intent(Intent.ACTION_DIAL).apply {
             data = Uri.parse("tel:$phoneNumber")
         }
         startActivity(intent)
     }
+    private fun l2NormDistance(embedding1: FloatArray, embedding2: FloatArray): Float {
+        var sum = 0.0
+        for (i in 0 until embedding1.size) {
+            sum += (embedding1[i] - embedding2[i]).pow(2)
+        }
+        return sqrt(sum).toFloat()
+    }
+
 }
