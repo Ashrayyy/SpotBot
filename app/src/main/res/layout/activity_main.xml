@@ -11,7 +11,7 @@
         android:id="@+id/loginTv"
         android:layout_width="wrap_content"
         android:layout_height="100dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="50dp"
         android:fontFamily="monospace"
         android:src="@drawable/spotbotic"
         android:textSize="48sp"
@@ -27,8 +27,7 @@
         android:layout_height="550dp"
         android:backgroundTint="#D7EFED"
         app:cardCornerRadius="10dp"
-        android:layout_marginBottom="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -37,9 +36,8 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/here"
-
             android:layout_width="350dp"
-            android:layout_height="550dp">
+            android:layout_height="wrap_content">
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="wrap_content"
@@ -59,7 +57,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
                 android:layout_width="300dp"
-                android:layout_height="280dp"
+                android:layout_height="240dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="30dp"
                 android:layout_marginEnd="10dp"
@@ -74,7 +72,7 @@
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="280dp">
+                    android:layout_height="match_parent">
 
                     <EditText
                         android:id="@+id/emailEt"
@@ -118,7 +116,7 @@
                         android:id="@+id/loginBtn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="30dp"
+                        android:layout_marginBottom="10dp"
                         android:backgroundTint="#5D7775"
                         android:text="@string/log_in"
                         android:textColor="#FAFAFA"
@@ -135,7 +133,7 @@
                 android:id="@+id/signUpBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="100dp"
+                android:layout_marginTop="30dp"
                 android:backgroundTint="#5D7775"
                 android:text="I don't have an account"
                 android:textColor="#FAFAFA"

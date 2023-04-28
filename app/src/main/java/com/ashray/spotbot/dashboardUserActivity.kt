@@ -2,7 +2,6 @@ package com.ashray.spotbot
 
 import android.app.ProgressDialog
 import android.content.Intent
-import android.media.FaceDetector
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,8 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.ashray.spotbot.databinding.ActivityDashboardUserBinding
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
-import com.google.mlkit.vision.face.FaceDetection
-import com.google.mlkit.vision.face.FaceDetectorOptions
 
 class dashboardUserActivity : AppCompatActivity() {
 
@@ -24,10 +21,6 @@ class dashboardUserActivity : AppCompatActivity() {
         binding=ActivityDashboardUserBinding.inflate(layoutInflater)
         val view=binding.root
         setContentView(view)
-        var detector: FaceDetector? = null
-        val highAccuracyOpts = FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-            .build()
 //        detector = FaceDetection.getClient()(highAccuracyOpts)
 
         val gallery = registerForActivityResult(
@@ -39,6 +32,10 @@ class dashboardUserActivity : AppCompatActivity() {
         binding.submitApp.setOnClickListener {
             if(!binding.name.text.toString().isEmpty() && !binding.telephoneEt.text.toString().isEmpty() && !binding.desc.text.toString().isEmpty()){
                 uploadImage()
+                binding.desc.text.clear()
+                binding.name.text.clear()
+                binding.telephoneEt.text.clear()
+                binding.img.setImageResource(R.drawable.ic)
             }
             else{
                 Toast.makeText(this,"One of the feild is empty",Toast.LENGTH_SHORT).show()
@@ -62,7 +59,7 @@ class dashboardUserActivity : AppCompatActivity() {
 
         if (requestCode == 100 && resultCode == RESULT_OK) {
             ImageUri = data?.data!!
-//            binding.img.setImageURI(ImageUri)
+            binding.img.setImageURI(ImageUri)
         }
     }
 
