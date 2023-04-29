@@ -29,16 +29,17 @@ FaceNet is a deep learning model for face recognition developed by researchers a
 The FaceNet model uses a deep convolutional neural network (CNN) architecture to extract features from facial images. The CNN consists of multiple layers that learn increasingly complex representations of the input image, culminating in a high-dimensional feature vector. The model is trained to minimize the distance between feature vectors of matching faces and maximize the distance between feature vectors of non-matching faces.
 
 ## Working
+<p align="center">
 <img src="https://user-images.githubusercontent.com/101005702/235321802-2d4540e8-9d86-4094-98db-403d20ccac8d.png" width="400dp"> <img src="https://user-images.githubusercontent.com/101005702/235321807-19e53078-35e7-4fe7-bc8b-fd9d17b5c2c8.png" width="400dp">
 
 1. Faces are detected in an image and are stored in a list.
 2. Bounding boxes are created out of the faces, and the image is copied and copped to get only the face.
-
+<p align="center">
 <img src="https://user-images.githubusercontent.com/101005702/235322060-4c1c5335-7071-4b27-8d67-939a73309007.png" width="400dp"> <img src="https://user-images.githubusercontent.com/101005702/235322064-e5033ffe-ea7c-4a28-a054-d4257d34da08.png" width="400dp">
 
 3. Since the required format for input image for FaceNet model is Bitmap, we process the images using the BitmapFactory to convert them to bitmap.
 4. FaceNet model's instance is created and is used to generate an array of 128 Floating point integers by passing the cropped face's Bitmap to it.
-
+<p align="center">
 <img src="https://user-images.githubusercontent.com/101005702/235321984-c64e632a-3f31-4413-aba5-32aa14c64ea0.png" width="400dp"> <img src="https://user-images.githubusercontent.com/101005702/235321989-2970ab4f-e4cd-4e86-8830-4e0bdc1d8bfb.png" width="400dp">
 
 5. Embeddings are extracted for the image of person that is missing and then these embeddings are compared with the Embeddings of every person present in the refrence images.
