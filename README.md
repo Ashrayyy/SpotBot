@@ -34,7 +34,7 @@ The FaceNet model uses a deep convolutional neural network (CNN) architecture to
 8. For Learning purpose, I've also displayed the 128 Floating point array (Face Embeddings) in a text view after the output.
 
 
-Acknowledgments
+## Acknowledgments
 SpotBot would not have been possible without the following resources and tools:
 
 TensorFlow Lite for mobile devices
