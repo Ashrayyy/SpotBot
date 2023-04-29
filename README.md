@@ -12,7 +12,8 @@ Face detection is a common computer vision task that involves identifying and lo
 #### Google MLKit
 For Face Detection, I've employed the use of Google ML Kit, a pre-trained machine learning model that detects faces in images and video streams. It uses a deep learning architecture that has been trained on a large dataset of faces to identify facial features and localize faces with high accuracy.
 
-![abcd](https://developers.google.com/static/ml-kit/vision/face-detection/images/face_contours.svg)
+<p align="center">
+<img src="https://developers.google.com/static/ml-kit/vision/face-detection/images/face_contours.svg" width="480"/>
 
 The ML Kit Face Detection model can detect multiple faces in an image or video stream, and provides information about the position, size, and orientation of each detected face. It can also identify landmarks on each face, such as the eyes, nose, and mouth, and estimate the pose of each face. It also provides various options that you can use to configure your use type, i.e., to detect facial landmarks/smiling probabilities, etc.
 You can find more about it [here](https://developers.google.com/ml-kit/vision/face-detection/android).
