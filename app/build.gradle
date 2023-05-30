@@ -44,6 +44,7 @@ dependencies {
 //    implementation platform('com.google.firebase:firebase-bom:31.2.2')
     implementation 'com.github.bumptech.glide:glide:4.15.0'
     implementation 'com.google.firebase:firebase-storage-ktx:20.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.15.0'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.core:core-ktx:1.9.0'
@@ -86,15 +87,10 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
 
 
-    // ml
-    implementation 'com.google.mlkit:image-labeling:17.0.7'
-    implementation 'com.google.mlkit:image-labeling-custom:17.0.1'
-    implementation 'com.google.mlkit:face-detection:16.1.5'
 
-    // text
-    implementation 'org.tensorflow:tensorflow-lite-task-text:0.2.0'
     // androidx camera
     implementation 'androidx.camera:camera-core:1.1.0'
 

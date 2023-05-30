@@ -31,7 +31,8 @@ class MyAdapter(private val context: Context) : RecyclerView.Adapter<MyAdapter.V
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.layout_list, parent, false))
+        return ViewHolder(LayoutInflater.from(context).inflate(R.layout.layout_list,
+            parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
