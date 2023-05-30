@@ -42,6 +42,7 @@ class FaceDetectActivity : AppCompatActivity() {
     private lateinit var croppedIv:ImageView
     private lateinit var detectFaceBtn: Button
     private lateinit var rslt:TextView
+    private lateinit var g:FloatArray
     private lateinit var detector:FaceDetector
     private lateinit var recogniseBtn: Button
     private lateinit var croppedBitmap:Bitmap
@@ -150,7 +151,7 @@ class FaceDetectActivity : AppCompatActivity() {
             getCon.launch("image/*")
         }
         recogniseBtn.setOnClickListener {
-            isPersonPresent(croppedBitmap,grpImage)
+            isPersonPresent(grpImage)
         }
     }
 
@@ -170,27 +171,14 @@ class FaceDetectActivity : AppCompatActivity() {
             })
     }
 
-    private fun isPersonPresent(personBitmap: Bitmap,grpBitmap: Bitmap) {
+    private fun isPersonPresent(grpBitmap: Bitmap) {
 
-//        Toast.makeText(this,"Working",Toast.LENGTH_SHORT).show()
-
-        var b=getResizedBitmap(personBitmap)
-        var g=faceNetModel.getFaceEmbedding(b)
-
-
-        val smallerBitmap=Bitmap.createScaledBitmap(
-            grpBitmap,grpBitmap.width/ SCALING_FACTOR,
-            grpBitmap.height/ SCALING_FACTOR,
-            false
-        )
-
-        val inputImage=InputImage.fromBitmap(smallerBitmap,0)
-
+        val inputImage=InputImage.fromBitmap(grpBitmap,0)
         val arrayString = g.joinToString(", ")
-//        rslt.text=g.toString().trim()
         rslt.text=arrayString
         var closestMatch=0
         var distance= 100.0F
+
         detector.process(inputImage)
             .addOnSuccessListener {faces->
                 if(faces.size>0){
@@ -200,13 +188,12 @@ class FaceDetectActivity : AppCompatActivity() {
                     for (num in 0..faces.size-1) {
 
 
-                        var bro=getResizedBitmap(returnBitmap(grpImage,faces[num]))
+                        var bro=BitmapUtils.cropRectFromBitmap(grpBitmap,faces[num].boundingBox)
                         var testFace=faceNetModel.getFaceEmbedding(bro)
 //                        if(num==2){
 //                            originalIv.setImageBitmap(bro)
 //                        }
-                        var sum:Float
-                        sum=l2NormDistance(g,testFace)
+                        var sum:Float = l2NormDistance(g,testFace)
 
 //                        for (i in 0..127){
 //                            var k:Float=testFace[i]-g[i]
@@ -224,12 +211,6 @@ class FaceDetectActivity : AppCompatActivity() {
 //                    Log.i("distance","${distance}")
                     var face=faces[closestMatch]
                     val rect = face.boundingBox
-                    rect.set(
-                        rect.left * SCALING_FACTOR,
-                        rect.top * (SCALING_FACTOR - 1),
-                        rect.right * (SCALING_FACTOR),
-                        rect.bottom * SCALING_FACTOR + 1
-                    )
                     cropDetectedFace(grpBitmap, faces, closestMatch)
                 }
                 else{
@@ -245,30 +226,13 @@ class FaceDetectActivity : AppCompatActivity() {
     private fun analyzePhoto(bitmap:Bitmap){
         Log.d(TAG, "analyze Photo: ")
 
-        val smallerBitmap=Bitmap.createScaledBitmap(
-            bitmap,bitmap.width/ SCALING_FACTOR,
-            bitmap.height/ SCALING_FACTOR,
-            false
-        )
 
-        val inputImage=InputImage.fromBitmap(smallerBitmap,0)
+        val inputImage=InputImage.fromBitmap(bitmap,0)
         detector.process(inputImage)
             .addOnSuccessListener {faces->
                 if(faces.size>0){
-
-
                     Log.d(TAG, "analyzePhoto: Successfully detected face ")
                     Toast.makeText(this, "Face Detected, No. of faces : ${faces.size}", Toast.LENGTH_SHORT).show()
-
-                    for (face in faces) {
-                        val rect = face.boundingBox
-                        rect.set(
-                            rect.left * SCALING_FACTOR,
-                            rect.top * (SCALING_FACTOR - 1),
-                            rect.right * (SCALING_FACTOR),
-                            rect.bottom * SCALING_FACTOR + 1
-                        )
-                    }
 
                     cropDetectedFace(bitmap, faces)
                     binding.selectBtn.visibility = View.VISIBLE
@@ -286,22 +250,10 @@ class FaceDetectActivity : AppCompatActivity() {
 
     private fun cropDetectedFace(bitmap: Bitmap,faces:List<Face>,closestMatch: Int=0){
         Log.i("close","$closestMatch")
-
         val rect=faces[closestMatch].boundingBox
-        val x=Math.max(rect.left,0)
-        val y=Math.max(rect.top,0)
-        val width=rect.width()
-        val height=rect.height()
-
-        croppedBitmap=Bitmap.createBitmap(
-            bitmap,
-            x,
-            y,
-            if(x+width>bitmap.width) bitmap.width - x else width,
-            if(y+height>bitmap.height)bitmap.height-y else height
-        )
-
+        croppedBitmap=BitmapUtils.cropRectFromBitmap(bitmap,rect)
         croppedIv.setImageBitmap(croppedBitmap)
+        g=faceNetModel.getFaceEmbedding(croppedBitmap)
     }
 
     private fun returnBitmap(bitmap: Bitmap,face:Face): Bitmap {
