@@ -40,6 +40,13 @@ android {
 
 
 dependencies {
+
+    // ViewModel livedata and lifecycles
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+
+
     // Firebase platform
 //    implementation platform('com.google.firebase:firebase-bom:31.2.2')
     implementation 'com.github.bumptech.glide:glide:4.15.0'

@@ -6,7 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.database.*
+import com.ashray.spotbot.network.DataModel
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class MyAdapter(private val context: Context) : RecyclerView.Adapter<MyAdapter.ViewHolder>() {
 

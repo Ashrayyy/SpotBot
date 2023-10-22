@@ -1,14 +1,12 @@
-package com.ashray.spotbot
+package com.ashray.spotbot.model
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import android.widget.Toast
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.ashray.spotbot.model.FaceNetModel
-import com.ashray.spotbot.model.MaskDetectionModel
+import com.ashray.spotbot.BoundingBoxOverlay
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -21,18 +19,19 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 // Analyser class to process frames and produce detections.
-class FrameAnalyser( private var context: Context ,
-                     private var boundingBoxOverlay: BoundingBoxOverlay ,
-                     private var model: FaceNetModel
-                     ) : ImageAnalysis.Analyzer {
+class FrameAnalyser(
+    private var context: Context,
+    private var boundingBoxOverlay: BoundingBoxOverlay,
+    private var model: FaceNetModel
+) : ImageAnalysis.Analyzer {
 
     private val realTimeOpts = FaceDetectorOptions.Builder()
-            .setPerformanceMode( FaceDetectorOptions.PERFORMANCE_MODE_FAST )
-            .build()
+        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+        .build()
     private val detector = FaceDetection.getClient(realTimeOpts)
 
-    private val nameScoreHashmap = HashMap<String,ArrayList<Float>>()
-    private var subject = FloatArray( model.embeddingDim )
+    private val nameScoreHashmap = HashMap<String, ArrayList<Float>>()
+    private var subject = FloatArray(model.embeddingDim)
 
     // Used to determine whether the incoming frame should be dropped or processed.
     private var isProcessing = false
@@ -71,15 +70,17 @@ class FrameAnalyser( private var context: Context ,
             isProcessing = true
 
             // Rotated bitmap for the FaceNet model
-            val frameBitmap = BitmapUtils.imageToBitmap( image.image!! , image.imageInfo.rotationDegrees )
+            val frameBitmap =
+                BitmapUtils.imageToBitmap(image.image!!, image.imageInfo.rotationDegrees)
 
             // Configure frameHeight and frameWidth for output2overlay transformation matrix.
-            if ( !boundingBoxOverlay.areDimsInit ) {
+            if (!boundingBoxOverlay.areDimsInit) {
                 boundingBoxOverlay.frameHeight = frameBitmap.height
                 boundingBoxOverlay.frameWidth = frameBitmap.width
             }
 
-            val inputImage = InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees )
+            val inputImage =
+                InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees)
             detector.process(inputImage)
                 .addOnSuccessListener { faces ->
                     CoroutineScope( Dispatchers.Default ).launch {
@@ -101,13 +102,14 @@ class FrameAnalyser( private var context: Context ,
                     // Crop the frame using face.boundingBox.
                     // Convert the cropped Bitmap to a ByteBuffer.
                     // Finally, feed the ByteBuffer to the FaceNet model.
-                    val croppedBitmap = BitmapUtils.cropRectFromBitmap( cameraFrameBitmap , face.boundingBox )
-                    subject = model.getFaceEmbedding( croppedBitmap )
+                    val croppedBitmap =
+                        BitmapUtils.cropRectFromBitmap(cameraFrameBitmap, face.boundingBox)
+                    subject = model.getFaceEmbedding(croppedBitmap)
 
                     // Perform face mask detection on the cropped frame Bitmap.
                     var maskLabel = ""
-                    if ( isMaskDetectionOn ) {
-                        maskLabel = maskDetectionModel.detectMask( croppedBitmap )
+                    if (isMaskDetectionOn) {
+                        maskLabel = maskDetectionModel.detectMask(croppedBitmap)
                     }
 
                     // Continue with the recognition if the user is not wearing a face mask

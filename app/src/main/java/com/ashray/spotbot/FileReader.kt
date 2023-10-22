@@ -2,6 +2,7 @@ package com.ashray.spotbot
 
 import android.graphics.Bitmap
 import android.graphics.Rect
+import com.ashray.spotbot.model.BitmapUtils
 import com.ashray.spotbot.model.FaceNetModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection

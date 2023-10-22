@@ -1,12 +1,16 @@
-package com.ashray.spotbot
+package com.ashray.spotbot.model
 
 import android.content.ContentResolver
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
+import android.graphics.Matrix
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.media.Image
 import android.net.Uri
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream

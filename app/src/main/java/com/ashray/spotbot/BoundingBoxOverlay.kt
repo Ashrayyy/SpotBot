@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.graphics.toRectF
+import com.ashray.spotbot.model.Prediction
 
 // Defines an overlay on which the boxes and text will be drawn.
 class BoundingBoxOverlay( context: Context , attributeSet: AttributeSet )

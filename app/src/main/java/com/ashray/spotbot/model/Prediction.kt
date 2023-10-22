@@ -1,4 +1,4 @@
-package com.ashray.spotbot
+package com.ashray.spotbot.model
 
 import android.graphics.Rect
 

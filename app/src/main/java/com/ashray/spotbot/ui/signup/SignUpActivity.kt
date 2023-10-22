@@ -1,14 +1,13 @@
-package com.ashray.spotbot
+package com.ashray.spotbot.ui.signup
 
 import android.app.ProgressDialog
 import android.content.Intent
-import android.media.tv.TvContract.Programs
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.ashray.spotbot.databinding.ActivitySignUpBinding
+import com.ashray.spotbot.ui.main.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
@@ -73,7 +72,7 @@ class SignUpActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Toast.makeText(this,"Account created.. \n redirecting to login page",Toast.LENGTH_SHORT).show()
                 updateUserInfo()
-                val intent=Intent(this,MainActivity::class.java)
+                val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)
                 finish()
             }

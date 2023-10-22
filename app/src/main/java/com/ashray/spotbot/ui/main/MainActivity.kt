@@ -1,12 +1,15 @@
-package com.ashray.spotbot
+package com.ashray.spotbot.ui.main
 
 import android.app.ProgressDialog
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.ashray.spotbot.ListActivity
+import com.ashray.spotbot.dashboardUserActivity
 import com.ashray.spotbot.databinding.ActivityMainBinding
+import com.ashray.spotbot.ui.signup.SignUpActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -35,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         val passEt=binding.passEt
 
         signUpBtn.setOnClickListener {
-            val intent=Intent(this,SignUpActivity::class.java)
+            val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }
 
@@ -86,12 +89,12 @@ class MainActivity : AppCompatActivity() {
                     progressDialog.dismiss()
                     val userType=snapshot.child("userType").value
                     if(userType=="user"){
-                        startActivity(Intent(this@MainActivity,dashboardUserActivity::class.java))
+                        startActivity(Intent(this@MainActivity, dashboardUserActivity::class.java))
                         finish()
                     }
                     else if(userType =="admin"){
 //                        startActivity(Intent(this@MainActivity,dashboardAdminActivity::class.java))
-                        startActivity(Intent(this@MainActivity,ListActivity::class.java))
+                        startActivity(Intent(this@MainActivity, ListActivity::class.java))
                         finish()
                     }
                 }

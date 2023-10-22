@@ -1,4 +1,4 @@
-package com.ashray.spotbot
+package com.ashray.spotbot.network
 
 class DataModel(
     var Name : String = "",

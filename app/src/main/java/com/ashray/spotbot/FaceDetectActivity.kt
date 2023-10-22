@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.ashray.spotbot.databinding.ActivityFaceDetectBinding
+import com.ashray.spotbot.model.BitmapUtils
 import com.ashray.spotbot.model.FaceNetModel
 import com.ashray.spotbot.model.Models
 import com.bumptech.glide.Glide
@@ -29,9 +30,7 @@ import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import java.io.File
 import java.io.FileNotFoundException
-import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -188,8 +187,8 @@ class FaceDetectActivity : AppCompatActivity() {
                     for (num in 0..faces.size-1) {
 
 
-                        var bro=BitmapUtils.cropRectFromBitmap(grpBitmap,faces[num].boundingBox)
-                        var testFace=faceNetModel.getFaceEmbedding(bro)
+                        var bro = BitmapUtils.cropRectFromBitmap(grpBitmap, faces[num].boundingBox)
+                        var testFace = faceNetModel.getFaceEmbedding(bro)
 //                        if(num==2){
 //                            originalIv.setImageBitmap(bro)
 //                        }
@@ -251,7 +250,7 @@ class FaceDetectActivity : AppCompatActivity() {
     private fun cropDetectedFace(bitmap: Bitmap,faces:List<Face>,closestMatch: Int=0){
         Log.i("close","$closestMatch")
         val rect=faces[closestMatch].boundingBox
-        croppedBitmap=BitmapUtils.cropRectFromBitmap(bitmap,rect)
+        croppedBitmap = BitmapUtils.cropRectFromBitmap(bitmap, rect)
         croppedIv.setImageBitmap(croppedBitmap)
         g=faceNetModel.getFaceEmbedding(croppedBitmap)
     }
